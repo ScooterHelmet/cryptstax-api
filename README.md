@@ -27,3 +27,4 @@ go build
 ./netstack-api
 ```
 * Navigate to http://localhost:8000 (404 response expected)
+* Test with PostMan
