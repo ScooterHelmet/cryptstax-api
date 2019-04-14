@@ -1,4 +1,4 @@
-# Netstack API
+# Cryptstax API
 
 ## Prerequisites
 * Golang Installed - https://golang.org/
