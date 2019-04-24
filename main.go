@@ -10,6 +10,12 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// ECDSA Struct (Model)
+type ECDSA struct {
+	ID  string `json:"id"`
+	Key string `json:"key"`
+}
+
 // Object Struct (Model)
 type Object struct {
 	ID       string    `json:"id"`
@@ -28,6 +34,13 @@ type Metadata struct {
 
 // Init objects var as a slice Object struct
 var objects []Object
+var ecdsa []ECDSA
+
+// ECDSA Route Handlers
+func getECDSAs(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(ecdsa)
+}
 
 // Route Handlers
 func getObjects(w http.ResponseWriter, r *http.Request) {
@@ -137,13 +150,21 @@ func main() {
 				LastmodifiedDate: "04/13/2019",
 				Size:             "31227", Type: "text"}})
 
-	// Route Handlers / Endpoints
+	// Objects -- Route Handlers / Endpoints
 	r.HandleFunc("/api/objects", getObjects).Methods("GET")
 	r.HandleFunc("/api/objects/{id}", getObject).Methods("GET")
 	r.HandleFunc("/api/objects", createObject).Methods("POST")
 	r.HandleFunc("/api/objects/{id}", updateObject).Methods("PUT")
 	r.HandleFunc("/api/objects/{id}", checkObject).Methods("HEAD")
 	r.HandleFunc("/api/objects/{id}", deleteObject).Methods("DELETE")
+
+	// ECDSAs -- Route Handlers / Endpoints
+	r.HandleFunc("/api/ecdsas", getECDSAs).Methods("GET")
+	//r.HandleFunc("/api/ecdas/{id}", getECDSA).Methods("GET")
+	//r.HandleFunc("/api/ecdsa", createECDSA).Methods("POST")
+	//r.HandleFunc("/api/ecdsa/{id}", updateECDSA).Methods("PUT")
+	//r.HandleFunc("/api/ecdsa/{id}", checkECDSA).Methods("HEAD")
+	//r.HandleFunc("/api/ecdsa/{id}", deleteECDSA).Methods("DELETE")
 
 	log.Fatal(http.ListenAndServe(":8000", r))
 }
