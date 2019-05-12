@@ -22,7 +22,7 @@ func main() {
 	// TEST DATA
 	channels = append(channels,
 		Channel{
-			ID:            "2",
+			ID:            "1",
 			Address:       "HTTP://127.0.0.1:7054",
 			Created:       "May-10-2019 10:46:54 PM",
 			Creator:       "Hyperledger Fabric",
