@@ -1,0 +1,18 @@
+DROP DATABASE IF EXISTS cryptstax_db CASCADE;
+CREATE DATABASE IF NOT EXISTS cryptstax_db;
+SET DATABASE = cryptstax_db;
+
+CREATE TABLE IF NOT EXISTS channels (
+    id INT DEFAULT unique_rowid(),
+    address VARCHAR NOT NULL UNIQUE,
+    created VARCHAR NOT NULL UNIQUE,
+    creator VARCHAR NOT NULL UNIQUE,
+    is_archived BOOLEAN NOT NULL UNIQUE,
+    is_channel BOOLEAN NOT NULL UNIQUE,
+    is_general BOOLEAN NOT NULL UNIQUE,
+    is_member BOOLEAN NOT NULL UNIQUE,
+    is_mpim BOOLEAN NOT NULL UNIQUE,
+    is_org_shared BOOLEAN NOT NULL UNIQUE,
+    is_private BOOLEAN NOT NULL UNIQUE,
+    is_shared BOOLEAN NOT NULL UNIQUE
+);

@@ -2,11 +2,10 @@ package main
 
 import (
 	"encoding/json"
-	"math/rand"
 	"net/http"
-	"strconv"
+	"log"
 
-	"github.com/gorilla/mux"
+	//"github.com/gorilla/mux"
 )
 
 // Struct (model)
@@ -15,8 +14,8 @@ type Workspace struct {
 }
 
 type Channel struct {
-	ID            string `json:"id"`
-	Address       string `json:"name"`
+	Id            int	 `json:"id"`
+	Address       string `json:"address"`
 	Created       string `json:"created"`
 	Creator       string `json:"creator"`
 	Is_archived   bool   `json:"is_archived"`
@@ -28,7 +27,7 @@ type Channel struct {
 	Is_private    bool   `json:"is_private"`
 	Is_shared     bool   `json:"is_shared"`
 }
-
+/*
 type Profile struct {
 	FirstName  string `json:"firstname"`
 	LastName   string `json:"lastname"`
@@ -39,46 +38,143 @@ type Profile struct {
 	PostalCode string `json:"postalcode"`
 	Country    string `json:"country"`
 }
+*/
+
+// Init channels as slice Channel struct
+var channels []Channel
 
 // Route Handlers
 func (s *server) handleGetChannels() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(channels)
+		ctx := r.Context()
+		if err := s.db.PingContext(ctx); err != nil {
+			log.Fatal(err)
+		  }
+
+		rows, err := s.db.QueryContext(ctx,
+		`SELECT * FROM cryptstax_db.public.channels;`)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for rows.Next() {
+			var channel Channel
+			err = rows.Scan(
+				&channel.Id,
+				&channel.Address,
+				&channel.Created,
+				&channel.Creator, 
+				&channel.Is_archived, 
+				&channel.Is_channel, 
+				&channel.Is_general, 
+				&channel.Is_member,
+				&channel.Is_mpim,
+				&channel.Is_org_shared,
+				&channel.Is_private,
+				&channel.Is_shared,)
+			if err != nil {
+				break
+			}
+			channels = append(channels, channel)
+		}
+		// Check for errors during rows "Close".
+		// This may be more important if multiple statements are executed
+		// in a single batch and rows were written as well as read.
+		if closeErr := rows.Close(); closeErr != nil {
+			http.Error(w, closeErr.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Check for row scan error.
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Check for errors during row iteration.
+		if err = rows.Err(); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		defer rows.Close()
+
+		if channels != nil {
+			json.NewEncoder(w).Encode(channels)
+		}
 	}
 }
 
 func (s *server) handleGetChannel() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		params := mux.Vars(r) // Get params
+		//params := mux.Vars(r) // Get params
 		// Loop through channels and find with id
-		for _, item := range channels {
+		/*for _, item := range channels {
 			if item.ID == params["id"] {
 				json.NewEncoder(w).Encode(item)
 				return
 			}
 		}
-		json.NewEncoder(w).Encode(&Channel{})
+		json.NewEncoder(w).Encode(&Channel{})*/
 	}
 }
 
 func (s *server) handleCreateChannel() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
+		ctx := r.Context()
 		var channel Channel
 		_ = json.NewDecoder(r.Body).Decode(&channel)
-		channel.ID = strconv.Itoa(rand.Intn(10000000)) //Mock ID - not safe/used in prod
-		channels = append(channels, channel)
-		json.NewEncoder(w).Encode(channel)
+		//channel.ID = strconv.Itoa(len(channels)+1)
+		//channels = append(channels, channel)
+
+		if err := s.db.PingContext(ctx); err != nil {
+			log.Fatal(err)
+		  }
+
+		result, err := s.db.ExecContext(ctx,`
+			INSERT INTO cryptstax_db.public.channels (
+				address,
+				created,
+				creator,
+				is_archived,
+				is_channel,
+				is_general,
+				is_member,
+				is_mpim,
+				is_org_shared,
+				is_private,
+				is_shared
+			) VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`, 
+			channel.Address,
+			channel.Created,
+			channel.Creator, 
+			channel.Is_archived, 
+			channel.Is_channel, 
+			channel.Is_general, 
+			channel.Is_member,
+			channel.Is_mpim,
+			channel.Is_org_shared,
+			channel.Is_private,
+			channel.Is_shared,
+		)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		json.NewEncoder(w).Encode(result)
 	}
 }
 
 func (s *server) handleUpdateChannel() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		params := mux.Vars(r)
-		for index, item := range channels {
+		//params := mux.Vars(r)
+		/*for index, item := range channels {
 			if item.ID == params["id"] {
 				channels = append(channels[:index], channels[index+1:]...)
 				var channel Channel
@@ -89,33 +185,35 @@ func (s *server) handleUpdateChannel() http.HandlerFunc {
 				return
 			}
 		}
-		json.NewEncoder(w).Encode(channels)
+		json.NewEncoder(w).Encode(channels)*/
 	}
 }
 
 func (s *server) handleCheckChannel() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		params := mux.Vars(r)
-		for _, item := range channels {
-			if item.ID == params["id"] {
-				return
-			}
-		}
-		json.NewEncoder(w).Encode(&Channel{})
+		//params := mux.Vars(r) // Get params
+		// Loop through channels and find with id
+		//for index, item := range channels {
+			//if item.ID == params["id"] {
+				//channels = append(channels[:index], channels[index+1:]...)
+				//break
+			//}
+		//}
+		//json.NewEncoder(w).Encode(channels)
 	}
 }
 
 func (s *server) handleDeleteChannel() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		params := mux.Vars(r)
-		for index, item := range channels {
-			if item.ID == params["id"] {
-				channels = append(channels[:index], channels[index+1:]...)
-				break
-			}
-		}
-		json.NewEncoder(w).Encode(channels)
+		//params := mux.Vars(r)
+		//for index, item := range channels {
+			//if item.ID == params["id"] {
+				//channels = append(channels[:index], channels[index+1:]...)
+				//break
+			//}
+		//}
+		//json.NewEncoder(w).Encode(channels)
 	}
 }
