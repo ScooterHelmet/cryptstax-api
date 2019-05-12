@@ -13,18 +13,18 @@ go get -u github.com/gorilla/mux
 
 ## Add Project to GOPATH 
 ```
-mkdir -p $GOPATH/src/github.com/[github_username]/netstack-api
+mkdir -p $GOPATH/src/github.com/[github_username]/cryptstax-api
 ```
 
-## Build Project
+## Build API
 ```
-cd ./netstack-api
+cd ./cryptstax-api/api
 go build
 ```
 
-## Run Project
+## Run API
 ```
-./netstack-api
+./crypstax-api/api
 ```
 * Navigate to http://localhost:8000 (404 response expected)
 * Test with PostMan
