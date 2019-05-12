@@ -16,15 +16,21 @@ go get -u github.com/gorilla/mux
 mkdir -p $GOPATH/src/github.com/[github_username]/cryptstax-api
 ```
 
-## Build API
+## Build and Run API
 ```
 cd ./cryptstax-api/api
 go build
+./api
 ```
 
-## Run API
+## Testing with Mailtrap
 ```
-./crypstax-api/api
+cd ./cryptstax-api
+touch .env
+echo "SMTP_USERNAME=" >> .env
+echo "SMTP_PASSWORD=" >> .env
 ```
+* For local SMTP testing, be sure to paste in the username and password of your smtp.mailtrap.io credentials
+
 * Navigate to http://localhost:8000 (404 response expected)
 * Test with PostMan
