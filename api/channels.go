@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"log"
 
-	//"github.com/gorilla/mux"
+	"github.com/gorilla/mux"
 )
 
 type Channel struct {
@@ -22,9 +22,6 @@ type Channel struct {
 	Is_private    bool   `json:"is_private"`
 	Is_shared     bool   `json:"is_shared"`
 }
-
-// Init channels as slice Channel struct
-var channels []Channel
 
 // Route Handlers
 func (s *server) handleCreateChannel() http.HandlerFunc {
@@ -69,8 +66,11 @@ func (s *server) handleCreateChannel() http.HandlerFunc {
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		json.NewEncoder(w).Encode(result)
+		
+		if result != nil {
+			w.WriteHeader(http.StatusOK)
+		}
+		
 	}
 }
 
@@ -78,6 +78,8 @@ func (s *server) handleGetChannels() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		ctx := r.Context()
+		// Init channels as slice Channel struct
+		var channels []Channel
 
 		if err := s.db.PingContext(ctx); err != nil {
 			log.Fatal(err)
@@ -109,7 +111,6 @@ func (s *server) handleGetChannels() http.HandlerFunc {
 				break
 			}
 			channels = append(channels, channel)
-			w.WriteHeader(http.StatusOK)
 		}
 		// Check for errors during rows "Close".
 		// This may be more important if multiple statements are executed
@@ -130,32 +131,54 @@ func (s *server) handleGetChannels() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
-		defer rows.Close()
+		
+		json.NewEncoder(w).Encode(channels)
 	}
 }
 
-func (s *server) handleGetChannel() http.HandlerFunc {
+func (s *server) handleGetChannelById() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		ctx := r.Context()
+		params := mux.Vars(r) // Get params
+		var channel Channel
 
 		if err := s.db.PingContext(ctx); err != nil {
 			log.Fatal(err)
 		  }
-		//params := mux.Vars(r) // Get params
-		// Loop through channels and find with id
 
-		json.NewEncoder(w).Encode(&Channel{})
+		err := s.db.QueryRowContext(ctx,
+			`SELECT * FROM cryptstax_db.public.channels WHERE id=$1;`, params["id"],
+		).Scan(
+			&channel.Id,
+			&channel.Address,
+			&channel.Created,
+			&channel.Creator, 
+			&channel.Is_archived, 
+			&channel.Is_channel, 
+			&channel.Is_general, 
+			&channel.Is_member,
+			&channel.Is_mpim,
+			&channel.Is_org_shared,
+			&channel.Is_private,
+			&channel.Is_shared,
+		)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		json.NewEncoder(w).Encode(channel)
 	}
 }
 
-
-
-func (s *server) handleUpdateChannel() http.HandlerFunc {
+func (s *server) handleUpdateChannelById() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		//params := mux.Vars(r)
+		// Init channels as slice Channel struct
+		var channels []Channel
+		
 		/*for index, item := range channels {
 			if item.ID == params["id"] {
 				channels = append(channels[:index], channels[index+1:]...)
@@ -166,8 +189,8 @@ func (s *server) handleUpdateChannel() http.HandlerFunc {
 				json.NewEncoder(w).Encode(channel)
 				return
 			}
-		}
-		json.NewEncoder(w).Encode(channels)*/
+		}*/
+		json.NewEncoder(w).Encode(channels)
 	}
 }
 
