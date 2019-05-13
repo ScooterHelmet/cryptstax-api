@@ -20,7 +20,7 @@ func (s *server) init() {
 	s.router.HandleFunc("/api/channels", s.handleGetChannels()).Methods("GET")
 
 	// GET {ID}
-	s.router.HandleFunc("/api/channels/{id}", s.handleGetChannel()).Methods("GET")
+	s.router.HandleFunc("/api/channels/{id}", s.handleGetChannelById()).Methods("GET")
 
 	// POST
 	s.router.HandleFunc("/api/channels", s.handleCreateChannel()).Methods("POST")
