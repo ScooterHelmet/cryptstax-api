@@ -7,7 +7,6 @@ import (
 	_ "github.com/lib/pq"
 	"net/url"
 	//"net/smtp"
-	//"database/sql"
 )
 
 type server struct {

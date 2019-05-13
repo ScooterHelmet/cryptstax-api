@@ -8,11 +8,6 @@ import (
 	//"github.com/gorilla/mux"
 )
 
-// Struct (model)
-type Workspace struct {
-	Channel *Channel
-}
-
 type Channel struct {
 	Id            int	 `json:"id"`
 	Address       string `json:"address"`
@@ -32,10 +27,58 @@ type Channel struct {
 var channels []Channel
 
 // Route Handlers
+func (s *server) handleCreateChannel() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		ctx := r.Context()
+
+		var channel Channel
+		_ = json.NewDecoder(r.Body).Decode(&channel)
+
+		if err := s.db.PingContext(ctx); err != nil {
+			log.Fatal(err)
+		  }
+
+		result, err := s.db.ExecContext(ctx,`
+			INSERT INTO cryptstax_db.public.channels (
+				address,
+				created,
+				creator,
+				is_archived,
+				is_channel,
+				is_general,
+				is_member,
+				is_mpim,
+				is_org_shared,
+				is_private,
+				is_shared
+			) VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);`, 
+			channel.Address,
+			channel.Created,
+			channel.Creator, 
+			channel.Is_archived, 
+			channel.Is_channel, 
+			channel.Is_general, 
+			channel.Is_member,
+			channel.Is_mpim,
+			channel.Is_org_shared,
+			channel.Is_private,
+			channel.Is_shared,
+		)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		json.NewEncoder(w).Encode(result)
+	}
+}
+
 func (s *server) handleGetChannels() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		ctx := r.Context()
+
 		if err := s.db.PingContext(ctx); err != nil {
 			log.Fatal(err)
 		  }
@@ -66,6 +109,7 @@ func (s *server) handleGetChannels() http.HandlerFunc {
 				break
 			}
 			channels = append(channels, channel)
+			w.WriteHeader(http.StatusOK)
 		}
 		// Check for errors during rows "Close".
 		// This may be more important if multiple statements are executed
@@ -88,75 +132,25 @@ func (s *server) handleGetChannels() http.HandlerFunc {
 		}
 
 		defer rows.Close()
-
-		if channels != nil {
-			json.NewEncoder(w).Encode(channels)
-		}
 	}
 }
 
 func (s *server) handleGetChannel() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		//params := mux.Vars(r) // Get params
-		// Loop through channels and find with id
-		/*for _, item := range channels {
-			if item.ID == params["id"] {
-				json.NewEncoder(w).Encode(item)
-				return
-			}
-		}
-		json.NewEncoder(w).Encode(&Channel{})*/
-	}
-}
-
-func (s *server) handleCreateChannel() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
 		ctx := r.Context()
-		var channel Channel
-		_ = json.NewDecoder(r.Body).Decode(&channel)
-		//channel.ID = strconv.Itoa(len(channels)+1)
-		//channels = append(channels, channel)
 
 		if err := s.db.PingContext(ctx); err != nil {
 			log.Fatal(err)
 		  }
+		//params := mux.Vars(r) // Get params
+		// Loop through channels and find with id
 
-		result, err := s.db.ExecContext(ctx,`
-			INSERT INTO cryptstax_db.public.channels (
-				address,
-				created,
-				creator,
-				is_archived,
-				is_channel,
-				is_general,
-				is_member,
-				is_mpim,
-				is_org_shared,
-				is_private,
-				is_shared
-			) VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`, 
-			channel.Address,
-			channel.Created,
-			channel.Creator, 
-			channel.Is_archived, 
-			channel.Is_channel, 
-			channel.Is_general, 
-			channel.Is_member,
-			channel.Is_mpim,
-			channel.Is_org_shared,
-			channel.Is_private,
-			channel.Is_shared,
-		)
-
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		json.NewEncoder(w).Encode(result)
+		json.NewEncoder(w).Encode(&Channel{})
 	}
 }
+
+
 
 func (s *server) handleUpdateChannel() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
