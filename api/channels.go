@@ -26,6 +26,7 @@ type Channel struct {
 // Route Handlers
 func (s *server) handleCreateChannel() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Content-Type", "application/json")
 		ctx := r.Context()
 
@@ -76,6 +77,7 @@ func (s *server) handleCreateChannel() http.HandlerFunc {
 
 func (s *server) handleGetChannels() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Content-Type", "application/json")
 		ctx := r.Context()
 		// Init channels as slice Channel struct
@@ -138,6 +140,7 @@ func (s *server) handleGetChannels() http.HandlerFunc {
 
 func (s *server) handleGetChannelById() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Content-Type", "application/json")
 		ctx := r.Context()
 		params := mux.Vars(r) // Get params
@@ -174,43 +177,20 @@ func (s *server) handleGetChannelById() http.HandlerFunc {
 
 func (s *server) handleUpdateChannelById() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Content-Type", "application/json")
-		//params := mux.Vars(r)
-		// Init channels as slice Channel struct
 		var channels []Channel
 		
-		/*for index, item := range channels {
-			if item.ID == params["id"] {
-				channels = append(channels[:index], channels[index+1:]...)
-				var channel Channel
-				_ = json.NewDecoder(r.Body).Decode(&channel)
-				channel.ID = params["id"]
-				channels = append(channels, channel)
-				json.NewEncoder(w).Encode(channel)
-				return
-			}
-		}*/
-		json.NewEncoder(w).Encode(channels)
-	}
-}
-
-func (s *server) handleCheckChannel() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		//params := mux.Vars(r) // Get params
-		// Loop through channels and find with id
-		//for index, item := range channels {
-			//if item.ID == params["id"] {
-				//channels = append(channels[:index], channels[index+1:]...)
-				//break
-			//}
-		//}
-		//json.NewEncoder(w).Encode(channels)
+		var channel Channel
+		_ = json.NewDecoder(r.Body).Decode(&channel)
+		channels = append(channels, channel)
+		json.NewEncoder(w).Encode(channel)
 	}
 }
 
 func (s *server) handleDeleteChannel() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Content-Type", "application/json")
 		//params := mux.Vars(r)
 		//for index, item := range channels {

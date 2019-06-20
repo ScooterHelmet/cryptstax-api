@@ -2,19 +2,20 @@ package main
 
 import (
 	"context"
-	"database/sql"
-	"github.com/gorilla/mux"
-	_ "github.com/lib/pq"
 	"net/url"
-	//"net/smtp"
+	"database/sql"
+	_ "github.com/lib/pq"
+	"github.com/gorilla/mux"
+	"github.com/hako/branca"
 )
 
 type server struct {
+	ctx			context.Context
 	origin		*url.URL
 	db			*sql.DB
-	ctx context.Context
 	router		*mux.Router
-	//smtp	smtp.Auth	//MailTrap.io STMP_USERNAME and STMP_PASSWORD
+	mailSender 	*MailSender
+	codec      	*branca.Branca
 }
 
 func main() {
@@ -23,11 +24,11 @@ func main() {
 	//	implement Steemit network endpoint
 	//	implement Ethereum network endpoint
 	//	...
-
 	server := &server{
 		router: mux.NewRouter(),
 	}
+
 	server.ConnectDB()
-	//server.ConnectCrypstaxNetwork()
+	server.ConnectSMTP()
 	server.Start()
 }

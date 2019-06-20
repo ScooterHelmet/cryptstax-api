@@ -1,0 +1,10 @@
+#vscode ide
+*vscode
+#go builds
+api/api
+#rsa keys
+api/keys
+#cockroachdb
+*cockroach-data
+#environment
+api/.env
