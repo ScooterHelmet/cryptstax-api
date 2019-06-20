@@ -6,9 +6,21 @@
 // OSX
 brew install go
 ```
-* Gorilla Mux Installed - https://github.com/gorilla/mux
+* GOPATH Dependencies
 ```
+go get -u github.com/dgrijalva/jwt-go
+go get -u github.com/dgryski/dgoogauth
 go get -u github.com/gorilla/mux
+go get -u github.com/hako/branca
+go get -u github.com/joho/godotenv
+go get -u github.com/lib/pq
+go get -u github.com/rs/cors
+go get -u github.com/sirupsen/logrus
+go get -u github.com/sendgrid/sendgrid-go
+go get -u github.com/sfreiberg/gotwilio
+go get -u golang.org/x/crypto/argon2
+go get -u gopkg.in/square/go-jose.v2
+go get -u rsc.io/qr
 ```
 
 ## Add Project to GOPATH 

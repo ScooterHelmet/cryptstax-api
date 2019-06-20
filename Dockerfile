@@ -9,4 +9,4 @@ RUN cockroach start --insecure --host 127.0.0.1 \
     && cat schema.sql | cockroach sql --insecure
 WORKDIR /bin/cryptstax-api
 CMD ["./cryptstax-api"]
-EXPOSE 8000
+EXPOSE 8000 25
